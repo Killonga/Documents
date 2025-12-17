@@ -10,25 +10,39 @@
 <body>
   <h1>Ejercicio E1 - M4</h1>
   <section>
-    text-align: center;
+
     <p>Nombre del libro</p>
     <input type="text" id="nombreLibro">
     <p>Autor del libro</p>
     <input type="text" id="autorLibro">
 
-    //agregar true/false= disponible-no disponible-no
     <p>Estado del libro</p>
-    <input type="text" id="estadoLibro">
+    <input type="text" id="estadoLibro" placeholder="Disponible / Prestado">
 
-    <button>Agregar libro</button>
-    <input type="text" id="agregarLibro">
-    <button>Buscar libro</button>
-    <input type="text" id="buscarLibro">
-    <button>Mostrar libros</button>
-    <button>Eliminar libro</button>
-    <input type="text" id="eliminarLibro">
-    <button>Eliminar todos los libros</button>
-    <button>Salir</button>
+    <!-- Botones de Acción -->
+    <button id="btnAgregar">Agregar libro</button>
+
+    <hr>
+
+    <button id="btnBuscar">Buscar libro</button>
+    <input type="text" id="buscarLibroInput" placeholder="Título a buscar">
+
+    <hr>
+
+    <button id="btnMostrar">Mostrar libros</button>
+
+    <hr>
+
+    <button id="btnEliminar">Eliminar libro</button>
+    <input type="text" id="eliminarLibro" placeholder="Título a eliminar">
+
+    <button id="btnEliminarTodos">Eliminar todos los libros</button>
+    <button id="btnSalir">Salir</button>
+  </section>
+
+  <section>
+    <h3>Resultados:</h3>
+    <ul id="listaResultados"></ul>
   </section>
 
   <script src="./main.js"></script>

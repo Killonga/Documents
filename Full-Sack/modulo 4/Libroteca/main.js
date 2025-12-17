@@ -1,4 +1,4 @@
-// 1. Definición de la Clase Libro
+// Clases
 class Libro {
   constructor(titulo, autor, estado) {
     this.titulo = titulo;
@@ -6,49 +6,118 @@ class Libro {
     this.estado = estado;
   }
 
-  mostrarInfo() {
-    console.log(
-      `El libro "${this.titulo}" de ${this.autor} se encuentra ${this.estado}.`
-    );
+  descripcion() {
+    return `Libro: "${this.titulo}" | Autor: ${this.autor} | Estado: ${this.estado}`;
   }
 }
 
-// 2. Inicialización del Programa
+// Variables Globales
 const inventario = [];
 
-// 3. Carga interactiva de libros
-let agregarOtroLibro = true;
+// Referencias al DOM
+const inputTitulo = document.getElementById("nombreLibro");
+const inputAutor = document.getElementById("autorLibro");
+const inputEstado = document.getElementById("estadoLibro");
+const listaResultados = document.getElementById("listaResultados");
 
-while (agregarOtroLibro) {
-  const titulo = prompt("Ingresa titulo del libro");
-  const autor = prompt("Ingresa autor del libro");
-  const estado = prompt("Ingresa estado del libro");
+// Botones
+const btnAgregar = document.getElementById("btnAgregar");
+const btnMostrar = document.getElementById("btnMostrar");
+const btnBuscar = document.getElementById("btnBuscar");
+const inputBuscar = document.getElementById("buscarLibroInput");
+const btnEliminar = document.getElementById("btnEliminar");
+const inputEliminar = document.getElementById("eliminarLibro");
+const btnEliminarTodos = document.getElementById("btnEliminarTodos");
 
-  if (!titulo || !autor || !estado) {
-    console.log("Todos los campos son obligatorios");
+// Funciones
+function mostrarMensaje(mensaje) {
+  listaResultados.innerHTML = `<li>${mensaje}</li>`;
+}
+
+function agregarLibro() {
+  const titulo = inputTitulo.value.trim();
+  const autor = inputAutor.value.trim();
+  const estado = inputEstado.value.trim();
+
+  if (titulo === "" || autor === "" || estado === "") {
+    alert("Por favor completa todos los campos.");
+    return;
+  }
+
+  const nuevoLibro = new Libro(titulo, autor, estado);
+  inventario.push(nuevoLibro);
+  mostrarMensaje(`Libro "${titulo}" agregado correctamente.`);
+
+  // Limpiar inputs
+  inputTitulo.value = "";
+  inputAutor.value = "";
+  inputEstado.value = "";
+}
+
+function mostrarLibros() {
+  listaResultados.innerHTML = "";
+  if (inventario.length === 0) {
+    mostrarMensaje("La biblioteca está vacía.");
+    return;
+  }
+
+  inventario.forEach((libro) => {
+    const li = document.createElement("li");
+    li.textContent = libro.descripcion();
+    listaResultados.appendChild(li);
+  });
+}
+
+function buscarLibro() {
+  const termino = inputBuscar.value.trim().toLowerCase();
+
+  if (termino === "") {
+    alert("Ingresa un título para buscar.");
+    return;
+  }
+
+  const resultado = inventario.find(libro => libro.titulo.toLowerCase() === termino);
+
+  listaResultados.innerHTML = "";
+  if (resultado) {
+    const li = document.createElement("li");
+    li.textContent = `Encontrado: ${resultado.descripcion()}`;
+    listaResultados.appendChild(li);
   } else {
-    const nuevoLibro = new Libro(titulo.trim(), autor.trim(), estado.trim());
-    inventario.push(nuevoLibro);
-  }
-  agregarOtroLibro = confirm("Desea agregar otro libro?");
-}
-
-// 4. Muestra inventario Completo
-console.log("--- Inventario de la Biblioteca ---");
-
-if (inventario.length === 0) {
-  console.log("No hay libros");
-} else {
-  // Este for recorre el array
-  for (const libro of inventario) {
-    // Y por cada elemento que encuentra en el Array, ejecuta su metodo mostrar libro
-    libro.mostrarInfo();
+    mostrarMensaje(`No se encontró ningún libro con el título "${termino}".`);
   }
 }
 
-// Ejemplo de Salida en Consola:
+function eliminarLibro() {
+  const termino = inputEliminar.value.trim().toLowerCase();
 
-// --- Inventario de la Biblioteca ---
-// El libro "Cien Años de Soledad" de Gabriel García Márquez se encuentra Disponible.
-// El libro "El Señor de los Anillos" de J.R.R. Tolkien se encuentra Prestado.
-// El libro "1984" de George Orwell se encuentra Disponible.
+  if (termino === "") {
+    alert("Ingresa un título para eliminar.");
+    return;
+  }
+
+  const index = inventario.findIndex(libro => libro.titulo.toLowerCase() === termino);
+
+  if (index !== -1) {
+    const libroEliminado = inventario.splice(index, 1);
+    mostrarMensaje(`Libro "${libroEliminado[0].titulo}" eliminado.`);
+    inputEliminar.value = "";
+  } else {
+    mostrarMensaje(`No se encontró el libro "${termino}" para eliminar.`);
+  }
+}
+
+function eliminarTodos() {
+  if (confirm("¿Estás seguro de querer borrar toda la biblioteca?")) {
+    inventario.length = 0;
+    mostrarMensaje("Todos los libros han sido eliminados.");
+    mostrarLibros();
+  }
+}
+
+// Event Listeners
+btnAgregar.addEventListener("click", agregarLibro);
+btnMostrar.addEventListener("click", mostrarLibros);
+btnBuscar.addEventListener("click", buscarLibro);
+btnEliminar.addEventListener("click", eliminarLibro);
+btnEliminarTodos.addEventListener("click", eliminarTodos);
