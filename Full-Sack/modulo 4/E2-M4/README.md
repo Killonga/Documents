@@ -31,18 +31,17 @@ ciudad: 'Barcelona'
 
 // Función tradicional para crear el mensaje de presentación
 
-function MensajePresentacion(user) {
-let nombre = user.nombre;
-let rango = user.rango;
-let edad = user.edad;
-let ciudad = user.ciudad;
+function crearMensajePresentacion(user) {
+var nombre = user.nombre;
+var rango = user.rango;
+var edad = user.edad;
+var ciudad = user.ciudad;
 
 let mensaje = 'Hola, mi nombre es ' + nombre +'mi rango es:'+ rango +', tengo ' + edad + ' años y vivo en la ciudad de ' + ciudad + '.';
 
 return mensaje;
 }
 
-// Se llama a la función y se muestra el resultado en consola.
-
-let mensajeDeBienvenida = MensajePresentacion(usuario);
+// Se llama a la función y se muestra el resultado en consola
+var mensajeDeBienvenida = crearMensajePresentacion(usuario);
 console.log(mensajeDeBienvenida);
