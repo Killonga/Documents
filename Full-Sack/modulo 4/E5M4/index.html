@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Consumo API</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Fuente moderna de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Usuarios de la API</h1>
+            <p>Ejemplo práctico de <code>fetch()</code> y <code>async/await</code></p>
+        </header>
+
+        <main>
+            <button id="loadButton" class="btn-primary">
+                Cargar Usuarios
+            </button>
+            
+            <div id="userList" class="user-grid">
+                <!-- Aquí se insertarán los usuarios -->
+                <p class="placeholder-text">Haz clic en el botón para obtener los datos...</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
