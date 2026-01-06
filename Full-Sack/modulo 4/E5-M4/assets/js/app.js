@@ -13,6 +13,62 @@ const buscarRecetas = async (ingrediente) => {
   }
 };
 
+// Función para traducir texto
+const traducirTexto = async (texto, langPair = "en|es") => {
+  if (!texto) return "";
+
+  // Helper para llamar a la API
+  const traducirChunk = async (chunk) => {
+    // Usar encodeURIComponent para asegurar que caracteres especiales se manejen bien
+    // y recortar si aun asi se pasa (aunque el chunking deberia prevenirlo)
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+      chunk
+    )}&langpair=${langPair}`;
+    try {
+      const respuesta = await fetch(url);
+      const datos = await respuesta.json();
+
+      if (datos.responseStatus !== 200) {
+        console.warn("API Error:", datos.responseDetails);
+        return chunk; // Retornar original si falla
+      }
+      return datos.responseData.translatedText;
+    } catch (error) {
+      console.error("Error al traducir:", error);
+      return chunk;
+    }
+  };
+
+  // Si es corto, traducir directo (limite seguro 450 chars)
+  if (texto.length < 450) {
+    return await traducirChunk(texto);
+  }
+
+  // Si es largo, dividir en oraciones
+  const oraciones = texto.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [texto];
+  const bloques = [];
+  let bloqueActual = "";
+
+  for (const oracion of oraciones) {
+    // Si agregar la siguiente oracion excede el limite, guardar bloque actual
+    if ((bloqueActual + oracion).length > 450) {
+      if (bloqueActual) bloques.push(bloqueActual);
+      bloqueActual = oracion;
+    } else {
+      bloqueActual += (bloqueActual ? " " : "") + oracion;
+    }
+  }
+  if (bloqueActual) bloques.push(bloqueActual);
+
+  // Traducir todos los bloques en paralelo (cuidado con rate limits, secuencial es mas seguro para free tier)
+  const traducciones = [];
+  for (const bloque of bloques) {
+    traducciones.push(await traducirChunk(bloque));
+  }
+
+  return traducciones.join(" ");
+};
+
 // Detalle de la receta por ID
 const detalleReceta = async (id) => {
   const url = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`;
@@ -49,7 +105,10 @@ const renderizarBusqueda = async () => {
     </div>
   </div>`;
 
-  const recetas = await buscarRecetas(ingrediente);
+  // Traducir el ingrediente de español a inglés para la API
+  const ingredienteIngles = await traducirTexto(ingrediente, "es|en");
+  
+  const recetas = await buscarRecetas(ingredienteIngles);
 
   if (!recetas) {
     contenedor.innerHTML = `
@@ -62,7 +121,15 @@ const renderizarBusqueda = async () => {
     return;
   }
 
-  contenedor.innerHTML = recetas
+  // Traducir los títulos de las recetas
+  const recetasTraducidas = await Promise.all(
+    recetas.map(async (receta) => {
+      const nombreTraducido = await traducirTexto(receta.strMeal);
+      return { ...receta, strMeal: nombreTraducido };
+    })
+  );
+
+  contenedor.innerHTML = recetasTraducidas
     .map(
       ({ strMealThumb, strMeal, idMeal }) => `
         <div class="col-12 col-md-6 col-lg-4">
@@ -105,15 +172,32 @@ document.addEventListener("click", async (e) => {
 
   const id = e.target.dataset.id;
 
+  // Mostrar spinner o mensaje de carga en el modal mientras traduce
+  const modalTitulo = document.getElementById("modalTitulo");
+  const modalDetalle = document.getElementById("modalDetalle");
+  const modalImagen = document.getElementById("modalImagen");
+
+  // Limpiar contenido previo y mostrar "Cargando..."
+  modalTitulo.textContent = "Cargando...";
+  modalDetalle.textContent = "Traduciendo receta...";
+  modalImagen.src = "";
+  modalImagen.alt = "";
+
+  // Mostrar modal inmediatamente
+  const modalElement = document.getElementById("modalReceta");
+  const modal = new bootstrap.Modal(modalElement);
+  modal.show();
+
+  // Obtener datos
   const { strMeal, strMealThumb, strInstructions } = await detalleReceta(id);
 
-  // Pasarlos al modal
-  document.getElementById("modalTitulo").textContent = strMeal;
-  document.getElementById("modalImagen").src = strMealThumb;
-  document.getElementById("modalImagen").alt = strMeal;
-  document.getElementById("modalDetalle").textContent = strInstructions;
+  // Traducir datos
+  const tituloTraducido = await traducirTexto(strMeal);
+  const instruccionesTraducidas = await traducirTexto(strInstructions);
 
-  // Mostrar modal
-  const modal = new bootstrap.Modal(document.getElementById("modalReceta"));
-  modal.show();
+  // Actualizar modal con datos traducidos
+  modalTitulo.textContent = tituloTraducido;
+  modalImagen.src = strMealThumb;
+  modalImagen.alt = tituloTraducido;
+  modalDetalle.textContent = instruccionesTraducidas;
 });
